@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joy Salon - Reservasi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+body{font-family:'Inter',sans-serif;background:#4e2b3d}
+.sidebar{background:#295158}
+.menu-active{background:rgba(255, 255, 255, 0.925)}
+</style>
+</head>
+<body class="flex min-h-screen">
+<!-- SIDEBAR KIRI -->
+<aside class="sidebar w-[250px] text-white p-4 flex flex-col fixed h-full">
+  <div class="mb-6"><h1 class="font-bold text-xl">Joy Salon</h1><p class="text-xs text-purple-300">Admin</p></div>
+  <nav class="space-y-2 text-sm flex-1">
+    <a class="flex gap-3 items-center px-3 py-2.5 rounded-lg text-gray-400"><i class="fa-solid fa-house w-5"></i>Beranda</a>
+    <a class="flex gap-3 items-center px-3 py-2.5 rounded-lg menu-active"><i class="fa-solid fa-calendar-check w-5"></i>Reservasi</a>
+    <a class="flex gap-3 items-center px-3 py-2.5 rounded-lg text-gray-400"><i class="fa-solid fa-money-bill w-5"></i>Transaksi</a>
+    <a class="flex gap-3 items-center px-3 py-2.5 rounded-lg text-gray-400"><i class="fa-solid fa-spa w-5"></i>Treatment</a>
+    <a class="flex gap-3 items-center px-3 py-2.5 rounded-lg text-gray-400"><i class="fa-solid fa-users w-5"></i>Pelanggan</a>
+    <a class="flex gap-3 items-center px-3 py-2.5 rounded-lg text-gray-400"><i class="fa-solid fa-user w-5"></i>Karyawan</a>
+    <a class="flex gap-3 items-center px-3 py-2.5 rounded-lg text-gray-400"><i class="fa-solid fa-user-gear w-5"></i>Pengguna</a>
+    <a class="flex gap-3 items-center px-3 py-2.5 rounded-lg text-gray-400"><i class="fa-solid fa-chart-bar w-5"></i>Laporan</a>
+    <a class="flex gap-3 items-center px-3 py-2.5 rounded-lg text-gray-400"><i class="fa-solid fa-right-from-bracket w-5"></i>Keluar</a>
+  </nav>
+</aside>
+
+<!-- KONTEN KANAN -->
+<main class="flex-1 ml-[250px] p-8">
+  <div class="flex justify-between items-start mb-5">
+    <div><h2 class="text-2xl font-bold">Reservasi</h2><p class="text-sm text-gray-500">Jumat, 18 September 2026 - 14 jadwal</p></div>
+    <button onclick="openModal()" class="bg-[#722f37] text-white px-4 py-2 rounded-lg text-sm">+ Tambah reservasi</button>
+  </div>
+
+  <!-- FITUR PENCARIAN & FILTER -->
+  <div class="flex gap-2 mb-4">
+    <div class="flex-1 relative"><i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
+      <input id="search" oninput="render()" placeholder="Cari nama pelanggan atau nomor HP..." class="w-full pl-10 pr-3 py-2.5 border rounded-lg text-sm">
+    </div>
+    <input id="tgl" type="date" value="2026-09-18" onchange="render()" class="border rounded-lg px-3 py-2.5 text-sm">
+    <select id="statusFilter" onchange="render()" class="border rounded-lg px-3 py-2.5 text-sm">
+      <option value="Semua">Semua status</option><option>Menunggu</option><option>Dikonfirmasi</option><option>Selesai</option><option>Ditolak</option>
+    </select>
+  </div>
+
+  <!-- TABEL DATA -->
+  <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+    <table class="w-full text-sm"><thead class="bg-gray-50 text-gray-500 text-xs"><tr>
+      <th class="px-4 py-3 text-left">Kode</th><th class="px-4 py-3 text-left">Pelanggan</th><th class="px-4 py-3 text-left">Treatment</th><th class="px-4 py-3 text-left">Jam</th><th class="px-4 py-3 text-left">Karyawan</th><th class="px-4 py-3 text-left">Status</th><th class="px-4 py-3 text-left">Aksi</th>
+    </tr></thead><tbody id="tbody" class="divide-y"></tbody></table>
+  </div>
+</main>
+
+<!-- MODAL CRUD -->
+<div id="modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50"><div class="bg-white p-6 rounded-xl w-full max-w-md">
+<h3 id="modalTitle" class="font-bold mb-4">Tambah Reservasi</h3>
+<input id="fKode" placeholder="Kode" class="w-full border rounded p-2 mb-2 text-sm">
+<input id="fPelanggan" placeholder="Pelanggan" class="w-full border rounded p-2 mb-2 text-sm">
+<input id="fHP" placeholder="No HP" class="w-full border rounded p-2 mb-2 text-sm">
+<input id="fTreatment" placeholder="Treatment" class="w-full border rounded p-2 mb-2 text-sm">
+<input id="fJam" type="time" class="w-full border rounded p-2 mb-2 text-sm">
+<input id="fKaryawan" placeholder="Karyawan" class="w-full border rounded p-2 mb-2 text-sm">
+<select id="fStatus" class="w-full border rounded p-2 mb-4 text-sm"><option>Menunggu</option><option>Dikonfirmasi</option><option>Selesai</option><option>Ditolak</option></select>
+<div class="flex gap-2 justify-end"><button onclick="closeModal()" class="border px-4 py-2 rounded text-sm">Batal</button><button onclick="save()" class="bg-[#2E1A32] text-white px-4 py-2 rounded text-sm">Simpan</button></div>
+</div></div>
+
+<script>
+let data=[
+{kode:'RS-1043',pelanggan:'Vienna',hp:'081200000001',treatment:'Smoothing',jam:'15.00',karyawan:'Ledi',status:'Menunggu'},
+{kode:'RS-1042',pelanggan:'Smith',hp:'081200000002',treatment:'Potong pria',jam:'13.00',karyawan:'Devit',status:'Dikonfirmasi'},
+{kode:'RS-1041',pelanggan:'Jelvia',hp:'081200000003',treatment:'Creambath + potong',jam:'11.30',karyawan:'Greis',status:'Selesai'},
+{kode:'RS-1040',pelanggan:'Jella',hp:'081200000004',treatment:'Hair spa',jam:'10.00',karyawan:'Meilan',status:'Selesai'},
+{kode:'RS-1039',pelanggan:'Karlin',hp:'081200000005',treatment:'Facial dasar',jam:'16.30',karyawan:'-',status:'Ditolak'},
+];
+let editIndex=-1;
+function badge(s){
+ let c=s=='Menunggu'?'bg-yellow-100 text-yellow-800 border-yellow-300':s=='Dikonfirmasi'?'bg-green-100 text-green-800 border-green-300':s=='Selesai'?'bg-gray-100 text-gray-700 border-gray-300':'bg-red-100 text-red-700 border-red-300';
+ return `<span class="px-2.5 py-1 rounded-full text-[11px] border ${c}">${s}</span>`;
+}
+function aksi(d,i){
+ // LOGIKA STATUS & AKSI SESUAI PDF
+ if(d.status=='Menunggu') return `<button onclick="upd(${i},'Dikonfirmasi')" class="text-green-600 text-xs mr-2 border border-green-300 px-2 py-1 rounded-full">Konfirmasi</button><button onclick="upd(${i},'Ditolak')" class="text-red-600 text-xs border border-red-300 px-2 py-1 rounded-full">Tolak</button>`;
+ if(d.status=='Dikonfirmasi') return `<button onclick="edit(${i})" class="text-blue-600 text-xs mr-2 border border-blue-300 px-2 py-1 rounded-full">Ubah</button><button onclick="upd(${i},'Selesai')" class="text-gray-600 text-xs border px-2 py-1 rounded-full">Selesai</button>`;
+ return `<button onclick="edit(${i})" class="text-purple-600 text-xs border border-purple-300 px-2 py-1 rounded-full">Lihat</button>`;
+}
+function render(){
+ let q=document.getElementById('search').value.toLowerCase();
+ let f=document.getElementById('statusFilter').value;
+ let tb=document.getElementById('tbody'); tb.innerHTML='';
+ data.filter(x=>(x.pelanggan.toLowerCase().includes(q)||x.hp.includes(q)) && (f=='Semua'||x.status==f))
+.forEach(d=>{
+  let idx=data.indexOf(d);
+  tb.innerHTML+=`<tr><td class="px-4 py-3">${d.kode}</td><td class="px-4 py-3">${d.pelanggan}</td><td class="px-4 py-3">${d.treatment}</td><td class="px-4 py-3">${d.jam}</td><td class="px-4 py-3">${d.karyawan}</td><td class="px-4 py-3">${badge(d.status)}</td><td class="px-4 py-3">${aksi(d,idx)}</td></tr>`;
+ });
+}
+function upd(i,s){data[i].status=s;render();}
+function openModal(){document.getElementById('modal').classList.remove('hidden');document.getElementById('modal').classList.add('flex');}
+function closeModal(){document.getElementById('modal').classList.add('hidden');editIndex=-1;}
+function edit(i){editIndex=i;let d=data[i];fKode.value=d.kode;fPelanggan.value=d.pelanggan;fHP.value=d.hp;fTreatment.value=d.treatment;fKaryawan.value=d.karyawan;fStatus.value=d.status;openModal();}
+function save(){
+ let obj={kode:fKode.value||'RS-'+Date.now().toString().slice(-4),pelanggan:fPelanggan.value,hp:fHP.value,treatment:fTreatment.value,jam:fJam.value||'10.00',karyawan:fKaryawan.value,status:fStatus.value};
+ if(editIndex>=0)data[editIndex]=obj;else data.unshift(obj);closeModal();render();
+}
+render();
+</script>
+</body>
+</html>
